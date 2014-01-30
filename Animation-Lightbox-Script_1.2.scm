@@ -341,7 +341,6 @@
          ;; create frame
 
          (animframe(car(gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE filename 50 NORMAL-MODE))))
-    (gimp-drawable-fill animframe WHITE-FILL)
     (gimp-image-add-layer img animframe 0)
 
     ;; position frame above active layer
@@ -1945,7 +1944,7 @@
  "RGB* RGBA*"
  SF-IMAGE    "Image"    0
  SF-TOGGLE "Colour" FALSE
- SF-TOGGLE "Background" FALSE
+ SF-TOGGLE "Background" TRUE
  )
 
 (script-fu-menu-register "lbox-comp-playback"
