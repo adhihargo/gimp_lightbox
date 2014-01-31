@@ -13,7 +13,7 @@
 ;;
 ;; ALL SETTINGS ARE BASED ON PAL (25fps)
 ;;
-;; Only includes exporting for .tif files as they are lossless and most
+;; Only includes exporting for .png files as they are lossless and most
 ;; easily used.  If you want to export frames as a different file
 ;; download sg-save-all-layers.scm plugin (Saul Goode 2008) from the
 ;; GIMP plugin website.
@@ -1973,7 +1973,7 @@
 
 ;; INFO
 ;;
-;; Composites and exports frames as .tifs. This can be done either based on timing or on layer order.
+;; Composites and exports frames as .pngs. This can be done either based on timing or on layer order.
 ;; Video Export uses GIMP's existing plugin GAP (GIMP Animation Package). The script composites
 ;; the layers together and creates timing before giving options for video export.
 
@@ -2007,14 +2007,14 @@
 
     (set! filename (string-append framename "-" newstring extention))
 
-    ;; framename-001.tif
+    ;; framename-001.png
     ;; return filename
 
     filename))
 
 ;; SAVE LAYERS
 
-(define(save-frames-as-tif img framename option dir timing)
+(define (save-frames-as-png img framename option dir timing)
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
          (i (- num-layers 1))
@@ -2029,7 +2029,7 @@
 
          (save-name "")
 
-         (ext ".tif"))
+         (ext ".png"))
 
     (gimp-image-undo-disable img)
 
@@ -2055,7 +2055,7 @@
 
               (set! save-name (filename-timing framename frame-num ext))
               (set! save-name (string-append dir DIR-SEPARATOR save-name))
-              (file-tiff-save 1 img layerid save-name save-name option)
+              (file-png-save 1 img layerid save-name save-name 0 9 1 1 1 1 1)
               (set! frame-num (+ frame-num 1))
               (set! hold (- hold 1)))))
 
@@ -2070,16 +2070,15 @@
 (define (lbox-imgseq-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 1))
-
     (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
-    (save-frames-as-tif newImg framename option dir timing)
+    (save-frames-as-png newImg framename option dir timing)
     (gimp-image-delete newImg)))
 
 (define (lbox-layercomp-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 0))
     (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
-    (save-frames-as-tif newImg framename option dir timing)
+    (save-frames-as-png newImg framename option dir timing)
     (gimp-image-delete newImg)))
 
 ;; Video Export
@@ -2143,7 +2142,7 @@
 (script-fu-register
  "lbox-imgseq-export"
  "Export Animation as Image _Sequence"
- "Exports frames based on their timing as .tif files"
+ "Exports frames based on their timing as .png files"
  "Benjamin Donoghue"
  "2011"
  "Spring 2011"
@@ -2166,7 +2165,7 @@
 ;;(script-fu-register
 ;;       "lbox-layercomp-export"
 ;;       "Export Composited Layers"
-;;       "Exports frames based on their layer order as .tif files"
+;;       "Exports frames based on their layer order as .png files"
 ;;       "Benjamin Donoghue"
 ;;       "2011"
 ;;       "Spring 2011"
