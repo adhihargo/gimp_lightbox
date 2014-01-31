@@ -809,7 +809,7 @@
       (set! i(- i 1)))
     FRAMEcount))
 
-(define(next-frame-down img layerpos)
+(define (next-frame-down img layerpos)
 
   (let* ((layername "")
          (check "")
@@ -841,7 +841,7 @@
 
     newlayerid))
 
-(define(next-frame-up img currentlayer)
+(define (next-frame-up img currentlayer)
 
   (let* ((layername "")
          (check "")
@@ -1454,7 +1454,7 @@
 
 ;; RENAME FRAMES (Based on their timing)
 
-(define(lbox-rename-frames-timing img)
+(define (lbox-rename-frames-timing img)
 
   (gimp-image-undo-group-start img)
 
@@ -1518,7 +1518,7 @@
 
 ;; RENAME FRAMES (sequentially)
 
-(define(lbox-rename-frames img)
+(define (lbox-rename-frames img)
   (gimp-image-undo-group-start img)
 
   (let* ((num-layers (car (gimp-image-get-layers img)))
@@ -1578,8 +1578,8 @@
 
 (script-fu-register
  "lbox-rename-frames-timing"
- "Rename Frames by Timing"
- "Renames Frames based on their _Timing"
+ "Rename Frames by _Timing"
+ "Renames Frames based on their Timing"
  "Benjamin Donoghue"
  "2011"
  "Spring 2011"
@@ -1591,8 +1591,8 @@
 
 (script-fu-register
  "lbox-rename-frames"
- "Rename Frames Sequentially"
- "Renames Frames based on their _Position"
+ "Rename Frames _Sequentially"
+ "Renames Frames based on their Position"
  "Benjamin Donoghue"
  "2011"
  "Spring 2011"
@@ -2067,8 +2067,7 @@
 
     (gimp-image-undo-enable img)))
 
-(define(lbox-imgseq-export img framename option dir inLine inColour inBG inAlpha)
-
+(define (lbox-imgseq-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 1))
 
@@ -2076,11 +2075,9 @@
     (save-frames-as-tif newImg framename option dir timing)
     (gimp-image-delete newImg)))
 
-(define(lbox-layercomp-export img framename option dir inLine inColour inBG inAlpha)
-
+(define (lbox-layercomp-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 0))
-
     (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
     (save-frames-as-tif newImg framename option dir timing)
     (gimp-image-delete newImg)))
@@ -2236,7 +2233,7 @@
 
 (script-fu-register
  "lbox-batch-rename"
- "Force Rename all Layers"
+ "_Force Rename All Layers"
  "Force renames all layers to 'Frame' layers. Gives options for timing"
  "Benjamin Donoghue"
  "2011"
