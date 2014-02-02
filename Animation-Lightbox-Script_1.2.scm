@@ -40,7 +40,7 @@
 
 ;;; Anim-canvas.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -53,7 +53,8 @@
 (define (lbox-hdlarge-new-image)
   (let* ((image (car (gimp-image-new 1920 1080 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1920 1080 RGBA-IMAGE "Background-01" 100 NORMAL-MODE))))
+         (bglayer (car (gimp-layer-new image 1920 1080 RGBA-IMAGE
+                                       "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
     (gimp-image-add-layer image bglayer 0)
@@ -69,7 +70,8 @@
 (define (lbox-hdsmall-new-image)
   (let* ((image (car (gimp-image-new 1280 720 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1280 720 RGBA-IMAGE "Background-01" 100 NORMAL-MODE))))
+         (bglayer (car (gimp-layer-new image 1280 720 RGBA-IMAGE
+                                       "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
     (gimp-image-add-layer image bglayer 0)
@@ -85,7 +87,8 @@
 (define (lbox-sd-new-image)
   (let* ((image (car (gimp-image-new 720 576 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 720 576 RGBA-IMAGE "Background-01" 100 NORMAL-MODE))))
+         (bglayer (car (gimp-layer-new image 720 576 RGBA-IMAGE
+                                       "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
     (gimp-image-add-layer image bglayer 0)
@@ -136,7 +139,7 @@
 
 ;;; Anim-add-paper.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;16.03.11
+;;; 16.03.11
 ;;; Version 0.9
 
 ;; INFO
@@ -162,8 +165,8 @@
 ;; Returns    : Number of Layers marked "B"
 
 (define (get-bg-num img)
-  (let* ((numoflayers(car(gimp-image-get-layers img)))
-         (framelist(cadr(gimp-image-get-layers img)))
+  (let* ((numoflayers (car (gimp-image-get-layers img)))
+         (framelist (cadr (gimp-image-get-layers img)))
          (frameno 0)
          (currentframe 0)
          (framename "")
@@ -171,14 +174,13 @@
          (Framecount 1))
 
     (while (> numoflayers 0)
+      (set! currentframe (aref framelist frameno))
+      (set! framename (car (gimp-drawable-get-name currentframe)))
 
-      (set! currentframe(aref framelist frameno))
-      (set! framename(car(gimp-drawable-get-name currentframe)))
-
-      (set! check(string-ref framename 0))
-      (set! check(string check))
-      (if(string=? check "B")
-         (set! Framecount(+ Framecount 1)))
+      (set! check (string-ref framename 0))
+      (set! check (string check))
+      (if (string=? check "B")
+         (set! Framecount (+ Framecount 1)))
       (set! numoflayers (- numoflayers 1))
       (set! frameno (+ frameno 1)))
 
@@ -190,15 +192,15 @@
 ;; Returns    : Double Digit BG Number
 
 (define (renumber-bg input)
-
-  (let* ((input(number->string input))
+  (let* ((input (number->string input))
          (output "")
          (numbera "")
          (numberb "")
-         (input(string-append "00" input))
-         (numbera(string-length input)))
+         (input (string-append "00" input))
+         (numbera (string-length input)))
+
     (set! numberb (- numbera 2))
-    (set! output(substring input numberb))
+    (set! output (substring input numberb))
     output))
 
 ;; NEW BACKGROUND LAYER
@@ -206,35 +208,30 @@
 ;; Parameters    : Image Number
 
 (define (lbox-new-bg img)
-
   (gimp-image-undo-group-start img)
-
   (let* (;; get image dimensions
-
-         (canvasWidth(car(gimp-image-width img)))
-         (canvasHeight(car(gimp-image-height img)))
+         (canvasWidth (car (gimp-image-width img)))
+         (canvasHeight (car (gimp-image-height img)))
 
          ;; Get BG frame number
+         (frameno (get-bg-num img))
+         (framenoa (renumber-bg frameno))
+         (filename (string-append "Background-" framenoa))
 
-         (frameno(get-bg-num img))
-         (framenoa(renumber-bg frameno))
-
-         (filename(string-append "Background-" framenoa))
          ;; create frame
-
-         (animframe(car(gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE filename 100 NORMAL-MODE))))
+         (animframe (car (gimp-layer-new img canvasWidth canvasHeight
+                                         RGBA-IMAGE filename 100 NORMAL-MODE))))
 
     (gimp-drawable-fill animframe WHITE-FILL)
     (gimp-image-add-layer img animframe 0)
 
     ;; move frame
-
     (gimp-image-lower-layer-to-bottom img animframe)
 
     (while (> frameno 1)
-
       (gimp-image-raise-layer img animframe)
       (set! frameno (- frameno 1)))
+
     animframe)
 
   (gimp-image-undo-group-end img)
@@ -250,8 +247,8 @@
 ;; Returns    : Number of layers marked "F"
 
 (define (get-frame-num img)
-  (let* ((numoflayers(car(gimp-image-get-layers img)))
-         (framelist(cadr(gimp-image-get-layers img)))
+  (let* ((numoflayers (car (gimp-image-get-layers img)))
+         (framelist (cadr (gimp-image-get-layers img)))
          (frameno 0)
          (currentframe 0)
          (framename "")
@@ -259,14 +256,13 @@
          (Framecount 1))
 
     (while (> numoflayers 0)
+      (set! currentframe (aref framelist frameno))
+      (set! framename (car (gimp-drawable-get-name currentframe)))
 
-      (set! currentframe(aref framelist frameno))
-      (set! framename(car(gimp-drawable-get-name currentframe)))
-
-      (set! check(string-ref framename 0))
-      (set! check(string check))
-      (if(string=? check "F")
-         (set! Framecount(+ Framecount 1)))
+      (set! check (string-ref framename 0))
+      (set! check (string check))
+      (if (string=? check "F")
+         (set! Framecount (+ Framecount 1)))
       (set! numoflayers (- numoflayers 1))
       (set! frameno (+ frameno 1)))
 
@@ -278,15 +274,15 @@
 ;; Returns    : Triple Digit Frame Number
 
 (define (renumber-frame input)
-
-  (let* ((input(number->string input))
+  (let* ((input (number->string input))
          (output "")
          (numbera "")
          (numberb "")
-         (input(string-append "000" input))
-         (numbera(string-length input)))
+         (input (string-append "000" input))
+         (numbera (string-length input)))
+
     (set! numberb (- numbera 3))
-    (set! output(substring input numberb))
+    (set! output (substring input numberb))
     output))
 
 ;; MOVE FRAME TO ABOVE ACTIVE LAYER
@@ -296,21 +292,17 @@
 ;;             Current Active Layer ID
 
 (define (move-frame img newframe active-layer)
-
-  (let* ((num-layers(car(gimp-image-get-layers img)))
-         (layer-array(cadr(gimp-image-get-layers img)))
+  (let* ((num-layers (car (gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
          (below-layer 0)
          (i 1)
          (break 0))
 
     ;; check if layer below is active layer otherwise lower layer
-
     (while (= break 0)
-
       (set! below-layer (aref layer-array i))
 
       (if (= below-layer active-layer)
-
           (set! break 1)
           (gimp-image-lower-layer img newframe))
 
@@ -323,28 +315,26 @@
 ;; Returns    : New Frame ID
 
 (define (animate-new-frame img inTime)
-
   (gimp-image-undo-group-start img)
-
   (let* (;; get image dimensions
+         (canvasWidth (car (gimp-image-width img)))
+         (canvasHeight (car (gimp-image-height img)))
 
-         (canvasWidth(car(gimp-image-width img)))
-         (canvasHeight(car(gimp-image-height img)))
-         ;; Get animation frame number
+         ;; get animation frame number
+         (frameno (get-frame-num img))
+         (frameno (renumber-frame frameno))
+         (filename (string-append "Frame-" frameno inTime))
 
-         (frameno(get-frame-num img))
-         (frameno(renumber-frame frameno))
-         (filename(string-append "Frame-" frameno inTime))
          ;; get active layer
+         (active-layer (car (gimp-image-get-active-layer img)))
 
-         (active-layer(car(gimp-image-get-active-layer img)))
          ;; create frame
+         (animframe (car (gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE
+                                       filename 50 NORMAL-MODE))))
 
-         (animframe(car(gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE filename 50 NORMAL-MODE))))
     (gimp-image-add-layer img animframe 0)
 
     ;; position frame above active layer
-
     (move-frame img animframe active-layer)
 
     animframe)
@@ -366,6 +356,7 @@
 (define (lbox-new-single-frame img)
   (let* ((timing "(40ms)")
          (animframe 0))
+
     (set! animframe (animate-new-frame img timing))
     animframe))
 
@@ -412,7 +403,7 @@
 
 ;;; Anim-addcolour.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -424,60 +415,48 @@
 ;; create layer above every "Frame" named Colour with multiply
 
 (define (lbox-add-colour-layers img)
-
   (gimp-image-undo-group-start img)
-
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
-
          (i 0)
-
          (layerid 0)
-
          (layername "")
          (frcheck "")
-
          (lname-length 0)
-
-         (canvasWidth(car(gimp-image-width img)))
-         (canvasHeight(car(gimp-image-height img)))
-
+         (canvasWidth (car (gimp-image-width img)))
+         (canvasHeight (car (gimp-image-height img)))
          (colourlayer 0)
-
          (layerpos 0)
-
          (ci 0)
          (clayerid 0)
          (clayername ""))
 
     (while (< i num-layers)
-
       (set! layerid (aref layer-array i))
-      (set! layername(car(gimp-drawable-get-name layerid)))
-      (set! frcheck(string-ref layername 0))
-      (set! frcheck(string frcheck))
+      (set! layername (car (gimp-drawable-get-name layerid)))
+      (set! frcheck (string-ref layername 0))
+      (set! frcheck (string frcheck))
 
       (if (string=? frcheck "F")
-
-          (
-           begin
+          (begin
             (set! layername (substring layername 5 9))
             (set! layername (string-append "Colour" layername))
 
             ;; check layer above see if match
-
             (set! clayerid (aref layer-array ci))
-            (set! clayername(car(gimp-drawable-get-name clayerid)))
-            (set! clayername(substring clayername 0 6))
+            (set! clayername (car (gimp-drawable-get-name clayerid)))
+            (set! clayername (substring clayername 0 6))
 
-            (if (not(string=? clayername "Colour"))
-
-                (
-                 begin
-                  (set! colourlayer (car(gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE layername 100 MULTIPLY-MODE)))
+            (if (not (string=? clayername "Colour"))
+                (begin
+                  (set! colourlayer
+                        (car (gimp-layer-new img canvasWidth canvasHeight
+                                             RGBA-IMAGE layername 100
+                                             MULTIPLY-MODE)))
                   ;;(gimp-drawable-fill colourlayer WHITE-FILL)
                   (gimp-image-add-layer img colourlayer layerpos)
                   (set! layerpos (+ layerpos 1))))))
+
       (set! layerpos (+ layerpos 1))
       (set! ci i)
       (set! i (+ i 1))))
@@ -500,7 +479,7 @@
 
 ;;; Anim-scroll.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; Based on the script
@@ -528,19 +507,15 @@
          (BGcheck ""))
 
     ;; set all layers to invisible
-
-    (while (equal?(>= i 0)(< i num-layers))
-
+    (while (equal?(>= i 0) (< i num-layers))
       (set! turn-off-layer (aref layer-array i))
 
       ;; check if a background
+      (set! layername (car (gimp-drawable-get-name turn-off-layer)))
+      (set! BGcheck (string-ref layername 0))
+      (set! BGcheck (string BGcheck))
 
-      (set! layername(car(gimp-drawable-get-name turn-off-layer)))
-      (set! BGcheck(string-ref layername 0))
-      (set! BGcheck(string BGcheck))
-
-      (if (not(string=? BGcheck "B"))
-
+      (if (not (string=? BGcheck "B"))
           (gimp-drawable-set-visible turn-off-layer 0))
 
       (set! i (+ i 1)))))
@@ -548,46 +523,42 @@
 ;; layertag 0 = just frame 1 = both on frame 2 = both on colour 3 = no frame
 
 (define (layer-tag num-layers layer-array ltlayer-pos)
-
   (let* ((currentid 0)
          (currentname "")
          (layertag 0)
          (vischeck 0))
 
     (set! currentid (aref layer-array ltlayer-pos))
-    (set! currentname (car(gimp-drawable-get-name currentid)))
+    (set! currentname (car (gimp-drawable-get-name currentid)))
     (set! currentname (substring currentname 0 6))
 
     (if (string=? currentname "Frame-")
-
         (begin
           (set! layertag 0)
           (if (= ltlayer-pos 0) (set! ltlayer-pos 1))
           (set! currentid (aref layer-array (- ltlayer-pos 1)))
-          (set! currentname (car(gimp-drawable-get-name currentid)))
+          (set! currentname (car (gimp-drawable-get-name currentid)))
           (set! currentname (substring currentname 0 6))
 
           (if (string=? currentname "Colour")
-
               (begin
-                (set! vischeck (car(gimp-drawable-get-visible currentid)))
-                (if (= vischeck 1)(set! layertag 1))
+                (set! vischeck (car (gimp-drawable-get-visible currentid)))
+                (if (= vischeck 1) (set! layertag 1))
                 (set! currentname "null")))))
 
     (if (string=? currentname "Colour")
-
         (begin
           (set! layertag 3)
-          (if (= ltlayer-pos (- num-layers 1))(set! ltlayer-pos (- ltlayer-pos 1)))
+          (if (= ltlayer-pos (- num-layers 1))
+              (set! ltlayer-pos (- ltlayer-pos 1)))
           (set! currentid (aref layer-array (+ ltlayer-pos 1)))
-          (set! currentname (car(gimp-drawable-get-name currentid)))
+          (set! currentname (car (gimp-drawable-get-name currentid)))
           (set! currentname (substring currentname 0 6))
 
           (if (string=? currentname "Frame-")
-
               (begin
-                (set! vischeck (car(gimp-drawable-get-visible currentid)))
-                (if (= vischeck 1)(set! layertag 2))
+                (set! vischeck (car (gimp-drawable-get-visible currentid)))
+                (if (= vischeck 1) (set! layertag 2))
                 (set! currentname "null")))))
 
     layertag))
@@ -595,9 +566,7 @@
 ;; CYCLE-LAYER
 
 (define (cycle-layer-frame img direction)
-
   (gimp-image-undo-group-start img)
-
   (let* ((active-layer (car (gimp-image-get-active-layer img)))
          (layer-pos (car (gimp-image-get-layer-position img active-layer)))
 
@@ -619,36 +588,30 @@
          (Colour-pos 0))
 
     ;; Get layer tag
-
     (set! layertag (layer-tag num-layers layer-array layer-pos))
     (if (= layertag 2)
         (if (= direction 0)
             (set! DWNskip 1)))
 
     ;; Turn visibility off on all frames
-
     (visibility-off img num-layers layer-array)
 
     ;; Search for next frame
-
-    (while (not(= BGskip 0))
-
+    (while (not (= BGskip 0))
       (if (= direction 0)
-
           (set! new-layer-pos (+ new-layer-pos 1))
           (set! new-layer-pos (- new-layer-pos 1)))
 
       (if (> new-layer-pos i) (set! new-layer-pos 0))
       (if (< new-layer-pos 0) (set! new-layer-pos i))
 
-      (set! new-layer-id(aref layer-array new-layer-pos))
+      (set! new-layer-id (aref layer-array new-layer-pos))
 
-      (set! layername(car(gimp-drawable-get-name new-layer-id)))
-      (set! BGcheck(string-ref layername 0))
-      (set! BGcheck(string BGcheck))
+      (set! layername (car (gimp-drawable-get-name new-layer-id)))
+      (set! BGcheck (string-ref layername 0))
+      (set! BGcheck (string BGcheck))
 
       ;; If moving down with colour skip one frame
-
       (if (= DWNskip 1)
           (if (string=? BGcheck "F")
               (begin
@@ -660,17 +623,15 @@
           (gimp-drawable-set-visible new-layer-id 1))
 
       ;; If frame break
-
       (if (string=? BGcheck "F") (set! BGskip 0)))
 
     ;; Get Colour ID (ignores if no colour)
-
-    (set! Colour-pos (- (car(gimp-image-get-layer-position img new-layer-id)) 1))
-    (if (< Colour-pos 0)(set! Colour-pos 0))
+    (set! Colour-pos
+          (- (car (gimp-image-get-layer-position img new-layer-id)) 1))
+    (if (< Colour-pos 0) (set! Colour-pos 0))
     (set! Ccheck-id (aref layer-array Colour-pos))
 
     ;; Set correct visibility
-
     (if (= layertag 1)
         (begin
           (gimp-drawable-set-visible Ccheck-id 1)
@@ -681,24 +642,21 @@
           (gimp-drawable-set-visible Ccheck-id 1)
           (gimp-image-set-active-layer img Ccheck-id)))
 
-    (if (= layertag 0)(gimp-image-set-active-layer img new-layer-id))
-    (if (= layertag 3)(gimp-image-set-active-layer img new-layer-id)))
+    (if (= layertag 0) (gimp-image-set-active-layer img new-layer-id))
+    (if (= layertag 3) (gimp-image-set-active-layer img new-layer-id)))
 
   (gimp-image-undo-group-end img)
   (gimp-displays-flush))
 
 ;; MAIN Cycle up
-
 (define (lbox-layer-up img)
-  (let* ((direction 1))(cycle-layer-frame img direction)))
+  (let* ((direction 1)) (cycle-layer-frame img direction)))
 
 ;; MAIN Cycle down
-
 (define (lbox-layer-down img)
-  (let* ((direction 0))(cycle-layer-frame img direction)))
+  (let* ((direction 0)) (cycle-layer-frame img direction)))
 
 ;; Register Scripts
-
 (script-fu-register
  "lbox-layer-up"
  "Cycle _Up Frame"
@@ -729,7 +687,7 @@
 
 ;;; Anim-onionskin.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -746,35 +704,30 @@
 ;; TURN OFF VISIBILTY
 
 (define (onion-visibility-off img)
-  (let* ((num-layers(car(gimp-image-get-layers img)))
-         (layer-array(cadr(gimp-image-get-layers img)))
+  (let* ((num-layers (car (gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
          (turn-off-layer 0)
          (i 0)
          (layername "")
          (BGcheck ""))
 
     ;; set all layers to invisible
-
-    (while (equal?(>= i 0)(< i num-layers))
-
+    (while (equal?(>= i 0) (< i num-layers))
       (set! turn-off-layer (aref layer-array i))
 
       ;; check if a background
+      (set! layername (car (gimp-drawable-get-name turn-off-layer)))
+      (set! BGcheck (string-ref layername 0))
+      (set! BGcheck (string BGcheck))
 
-      (set! layername(car(gimp-drawable-get-name turn-off-layer)))
-      (set! BGcheck(string-ref layername 0))
-      (set! BGcheck(string BGcheck))
-
-      (if (not(string=? BGcheck "B"))
-
+      (if (not (string=? BGcheck "B"))
           (gimp-drawable-set-visible turn-off-layer 0))
 
       (set! i (+ i 1)))))
 
 (define (number-of-visframes img)
-
-  (let* ((numlayers(car(gimp-image-get-layers img)))
-         (layer-array(cadr(gimp-image-get-layers img)))
+  (let* ((numlayers (car (gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
 
          (FRAMEcount 0)
 
@@ -786,67 +739,57 @@
          (i 0))
 
     (set! i (- numlayers 1))
-
     (while (>= i 0)
-
       (set! checklayer (aref layer-array i))
 
       ;; check if frame is visible
-
-      (set! checkvis (car(gimp-drawable-get-visible checklayer)))
+      (set! checkvis (car (gimp-drawable-get-visible checklayer)))
 
       ;; check if frame
-
-      (set! layername(car(gimp-drawable-get-name checklayer)))
-      (set! FCheck(string-ref layername 0))
-      (set! FCheck(string FCheck))
+      (set! layername (car (gimp-drawable-get-name checklayer)))
+      (set! FCheck (string-ref layername 0))
+      (set! FCheck (string FCheck))
 
       (if (string=? FCheck "F")
-
           (if (= checkvis 1)
-              (set! FRAMEcount(+ FRAMEcount 1))))
+              (set! FRAMEcount (+ FRAMEcount 1))))
 
-      (set! i(- i 1)))
+      (set! i (- i 1)))
+
     FRAMEcount))
 
 (define (next-frame-down img layerpos)
-
   (let* ((layername "")
          (check "")
-         (layer-array(cadr(gimp-image-get-layers img)))
-         (numlayers(car(gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
+         (numlayers (car (gimp-image-get-layers img)))
          (newlayerid)
          (newlayerpos (+ layerpos 1))
          (break 0))
 
-    (if (> newlayerpos (- numlayers 1))(set! break 1))
-
+    (if (> newlayerpos (- numlayers 1)) (set! break 1))
     (while (= break 0)
-
       (set! newlayerid (aref layer-array newlayerpos))
+      (set! layername (car (gimp-drawable-get-name newlayerid)))
+      (set! check (string-ref layername 0))
+      (set! check (string check))
 
-      (set! layername(car(gimp-drawable-get-name newlayerid)))
-      (set! check(string-ref layername 0))
-      (set! check(string check))
+      (if (string=? check "F") (set! break 1))
 
-      (if (string=? check "F")(set! break 1))
-
-      (set! newlayerpos(+ newlayerpos 1))
-      (if (> newlayerpos (- numlayers 1))(set! break 1)))
+      (set! newlayerpos (+ newlayerpos 1))
+      (if (> newlayerpos (- numlayers 1)) (set! break 1)))
 
     (if (not (string=? check "F"))
-
         (set! newlayerid
               (aref layer-array layerpos)))
 
     newlayerid))
 
 (define (next-frame-up img currentlayer)
-
   (let* ((layername "")
          (check "")
-         (layer-array(cadr(gimp-image-get-layers img)))
-         (numlayers(car(gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
+         (numlayers (car (gimp-image-get-layers img)))
          (newlayerid)
          (newlayerpos (- currentlayer 1))
          (break 0))
@@ -854,17 +797,16 @@
     (if (< newlayerpos 0) (set! break 1))
 
     (while (= break 0)
-
       (set! newlayerid (aref layer-array newlayerpos))
 
-      (set! layername(car(gimp-drawable-get-name newlayerid)))
-      (set! check(string-ref layername 0))
-      (set! check(string check))
+      (set! layername (car (gimp-drawable-get-name newlayerid)))
+      (set! check (string-ref layername 0))
+      (set! check (string check))
 
-      (if (string=? check "F")(set! break 1))
+      (if (string=? check "F") (set! break 1))
 
-      (set! newlayerpos(- newlayerpos 1))
-      (if (< newlayerpos 0)(set! break 1)))
+      (set! newlayerpos (- newlayerpos 1))
+      (if (< newlayerpos 0) (set! break 1)))
 
     (if (not (string=? check "F"))
 
@@ -874,9 +816,8 @@
     newlayerid))
 
 (define (lbox-onionskin-down img actlayer)
-
-  (let* ((layerpos(car(gimp-image-get-layer-position img actlayer)))
-         (frames(number-of-visframes img))
+  (let* ((layerpos (car (gimp-image-get-layer-position img actlayer)))
+         (frames (number-of-visframes img))
          ;;(frames 1)
          (visible 0)
          (newlayerid 0)
@@ -885,103 +826,81 @@
     (gimp-image-undo-group-start img)
 
     ;; If one frame check active layer visibility
-
-    ;; start if
-
     (if (= frames 1)
-        (
-         begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+        (begin
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
           (onion-visibility-off img)
 
           (if (= visible 1)
 
-              (
-               begin
+              (begin
                 (gimp-drawable-set-visible actlayer TRUE)
                 (set! newlayerid (next-frame-down img layerpos))
                 (gimp-drawable-set-visible newlayerid TRUE)
-                (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                 (set! newlayerid (next-frame-down img layerpos))
                 (gimp-drawable-set-visible newlayerid TRUE))
 
               (gimp-drawable-set-visible actlayer TRUE))))
 
     (set! nlayerpos layerpos)
-    ;; start if
-
     (if (= frames 3)
-        (
-         begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+        (begin
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
 
           ;; check current layer
-
           (if (= visible 1)
 
-              (
-               begin
+              (begin
                 (set! newlayerid (next-frame-down img layerpos))
-                (set! nlayerpos (car(gimp-image-get-layer-position img newlayerid)))
-                (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                (set! nlayerpos (car (gimp-image-get-layer-position img newlayerid)))
+                (set! visible (car (gimp-drawable-get-visible newlayerid)))
 
                 ;; check next layer
-
                 (if (= visible 1)
-
-                    (
-                     begin
+                    (begin
                       (set! newlayerid (next-frame-down img nlayerpos))
-                      (set! nlayerpos (car(gimp-image-get-layer-position img newlayerid)))
-                      (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                      (set! nlayerpos (car (gimp-image-get-layer-position
+                                            img newlayerid)))
+                      (set! visible (car (gimp-drawable-get-visible newlayerid)))
 
                       ;; check next layer
-
                       (if (= visible 1)
                           ;; turn on layers
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE)
                             (set! newlayerid (next-frame-down img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-down img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-down img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-down img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
                             (if (not (= (number-of-visframes img) 5))
-                                (if (not (= (number-of-visframes img) 4))(set! frames 0))))
+                                (if (not (= (number-of-visframes img) 4)) (set! frames 0))))
 
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE))))
 
-                    (
-                     begin
+                    (begin
                       (onion-visibility-off img)
                       (gimp-drawable-set-visible actlayer TRUE))))
 
-              (
-               begin
+              (begin
                 (onion-visibility-off img)
                 (gimp-drawable-set-visible actlayer TRUE)))))
 
-    ;; end if
-
     (if (not (= frames 3))
-
-        (if (not (= frames 1))(set! frames 0)))
+        (if (not (= frames 1)) (set! frames 0)))
 
     (if (= frames 0)
-
-        (
-         begin
+        (begin
           (onion-visibility-off img)
           (gimp-drawable-set-visible actlayer TRUE)))
 
@@ -989,8 +908,8 @@
     (gimp-displays-flush)))
 
 (define (lbox-onionskin-up img actlayer)
-  (let* ((layerpos(car(gimp-image-get-layer-position img actlayer)))
-         (frames(number-of-visframes img))
+  (let* ((layerpos (car (gimp-image-get-layer-position img actlayer)))
+         (frames (number-of-visframes img))
          ;; (frames 1)
          (visible 0)
          (newlayerid 0)
@@ -1001,7 +920,7 @@
     ;; If one frame check active layer visibility
     (if (= frames 1)
         (begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
           (onion-visibility-off img)
 
           (if (= visible 1)
@@ -1009,7 +928,8 @@
                 (gimp-drawable-set-visible actlayer TRUE)
                 (set! newlayerid (next-frame-up img layerpos))
                 (gimp-drawable-set-visible newlayerid TRUE)
-                (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                (set! layerpos (car (gimp-image-get-layer-position
+                                     img newlayerid)))
                 (set! newlayerid (next-frame-up img layerpos))
                 (gimp-drawable-set-visible newlayerid TRUE))
 
@@ -1017,75 +937,65 @@
 
     (set! nlayerpos layerpos)
     (if (= frames 3)
-        (
-         begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+        (begin
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
 
           ;; check current layer
-
           (if (= visible 1)
-
-              (
-               begin
+              (begin
                 (set! newlayerid (next-frame-up img layerpos))
-                (set! nlayerpos (car(gimp-image-get-layer-position img newlayerid)))
-                (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                (set! nlayerpos (car (gimp-image-get-layer-position
+                                      img newlayerid)))
+                (set! visible (car (gimp-drawable-get-visible newlayerid)))
 
                 ;; check next layer
-
                 (if (= visible 1)
-
-                    (
-                     begin
+                    (begin
                       (set! newlayerid (next-frame-up img nlayerpos))
-                      (set! nlayerpos (car(gimp-image-get-layer-position img newlayerid)))
-                      (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                      (set! nlayerpos (car (gimp-image-get-layer-position
+                                            img newlayerid)))
+                      (set! visible (car (gimp-drawable-get-visible
+                                          newlayerid)))
 
                       ;; check next layer
-
                       (if (= visible 1)
                           ;; turn on layers
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE)
                             (set! newlayerid (next-frame-up img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-up img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-up img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! layerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! layerpos (car (gimp-image-get-layer-position img newlayerid)))
                             (set! newlayerid (next-frame-up img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
                             (if (not (= (number-of-visframes img) 5))
-                                (if (not (= (number-of-visframes img) 4))(set! frames 0))))
+                                (if (not (= (number-of-visframes img) 4)) (set! frames 0))))
 
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE))))
 
-                    (
-                     begin
+                    (begin
                       (onion-visibility-off img)
                       (gimp-drawable-set-visible actlayer TRUE))))
 
-              (
-               begin
+              (begin
                 (onion-visibility-off img)
                 (gimp-drawable-set-visible actlayer TRUE)))))
 
     (if (not (= frames 3))
 
-        (if (not (= frames 1))(set! frames 0)))
+        (if (not (= frames 1)) (set! frames 0)))
 
     (if (= frames 0)
 
-        (
-         begin
+        (begin
           (onion-visibility-off img)
           (gimp-drawable-set-visible actlayer TRUE)))
 
@@ -1093,9 +1003,8 @@
     (gimp-displays-flush)))
 
 (define (lbox-onionskin-centre img actlayer)
-
-  (let* ((layerpos(car(gimp-image-get-layer-position img actlayer)))
-         (frames(number-of-visframes img))
+  (let* ((layerpos (car (gimp-image-get-layer-position img actlayer)))
+         (frames (number-of-visframes img))
          ;;(frames 1
          (visible 0)
          (newlayerid 0)
@@ -1104,19 +1013,14 @@
     (gimp-image-undo-group-start img)
 
     ;; If one frame check active layer visibility
-
-    ;; start if
-
     (if (= frames 1)
-        (
-         begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+        (begin
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
           (onion-visibility-off img)
 
           (if (= visible 1)
 
-              (
-               begin
+              (begin
                 (gimp-drawable-set-visible actlayer TRUE)
                 (set! newlayerid (next-frame-down img layerpos))
                 (gimp-drawable-set-visible newlayerid TRUE)
@@ -1125,84 +1029,72 @@
                 (gimp-drawable-set-visible newlayerid TRUE))
 
               (gimp-drawable-set-visible actlayer TRUE))))
-    ;; end if
+
     (set! dlayerpos layerpos)
-    ;; start if
 
     (if (= frames 3)
-        (
-         begin
-          (set! visible (car(gimp-drawable-get-visible actlayer)))
+        (begin
+          (set! visible (car (gimp-drawable-get-visible actlayer)))
 
           ;; check current layer
-
           (if (= visible 1)
-
-              (
-               begin
+              (begin
                 (set! newlayerid (next-frame-down img layerpos))
-                (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                (set! visible (car (gimp-drawable-get-visible newlayerid)))
 
                 ;; check next layer
-
                 (if (= visible 1)
 
-                    (
-                     begin
+                    (begin
                       (set! newlayerid (next-frame-up img layerpos))
-                      (set! visible (car(gimp-drawable-get-visible newlayerid)))
+                      (set! visible (car (gimp-drawable-get-visible newlayerid))
 
                       ;; check next layer
-
                       (if (= visible 1)
                           ;; turn on layers
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE)
                             (set! newlayerid (next-frame-down img layerpos))
-                            (set! dlayerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! dlayerpos (car (gimp-image-get-layer-position
+                                                  img newlayerid)))
                             (gimp-drawable-set-visible newlayerid TRUE)
                             (set! newlayerid (next-frame-down img dlayerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
                             (set! newlayerid (next-frame-up img layerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
-                            (set! dlayerpos(car(gimp-image-get-layer-position img newlayerid)))
+                            (set! dlayerpos (car (gimp-image-get-layer-position
+                                                  img newlayerid)))
                             (set! newlayerid (next-frame-up img dlayerpos))
                             (gimp-drawable-set-visible newlayerid TRUE)
                             (if (not (= (number-of-visframes img) 5))
-                                (if (not (= (number-of-visframes img) 4))(set! frames 0))))
+                                (if (not (= (number-of-visframes img) 4))
+                                    (set! frames 0))))
 
-                          (
-                           begin
+                          (begin
                             (onion-visibility-off img)
                             (gimp-drawable-set-visible actlayer TRUE))))
 
-                    (
-                     begin
+                    (begin
                       (onion-visibility-off img)
                       (gimp-drawable-set-visible actlayer TRUE))))
 
-              (
-               begin
+              (begin
                 (onion-visibility-off img)
                 (gimp-drawable-set-visible actlayer TRUE)))))
 
-    ;; end if
-
     (if (not (= frames 3))
 
-        (if (not (= frames 1))(set! frames 0)))
+        (if (not (= frames 1)) (set! frames 0)))
 
     (if (= frames 0)
 
-        (
-         begin
+        (begin
           (onion-visibility-off img)
           (gimp-drawable-set-visible actlayer TRUE)))
 
     (gimp-image-undo-group-end img)
-    (gimp-displays-flush)))
+    (gimp-displays-flush))))
 
 (script-fu-register
  "lbox-onionskin-down"
@@ -1251,7 +1143,7 @@
 
 ;;; Anim-opacity.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 ;;
 ;; Lightbox
@@ -1269,23 +1161,17 @@
 ;;
 
 (define (opacity-update-all img opacity)
-
   (gimp-image-undo-group-start img)
-
-  (let* ((numoflayers(car(gimp-image-get-layers img)))
-         (framelist(cadr(gimp-image-get-layers img)))
+  (let* ((numoflayers (car (gimp-image-get-layers img)))
+         (framelist (cadr (gimp-image-get-layers img)))
          (currentframe 0)
          (i 0))
 
-    (set! i(- numoflayers 1))
-
+    (set! i (- numoflayers 1))
     (while (>= i 0)
-
-      (set! currentframe(aref framelist i))
+      (set! currentframe (aref framelist i))
       (gimp-layer-set-opacity currentframe opacity)
-      (set! i (- i 1)))
-
-    )
+      (set! i (- i 1))))
 
   (gimp-image-undo-group-end img)
   (gimp-displays-flush))
@@ -1293,31 +1179,25 @@
 ;; OPACITY FRAMES
 
 (define (opacity-update-frames img opacity)
-
   (gimp-image-undo-group-start img)
 
-  (let* ((numoflayers(car(gimp-image-get-layers img)))
-         (framelist(cadr(gimp-image-get-layers img)))
+  (let* ((numoflayers (car (gimp-image-get-layers img)))
+         (framelist (cadr (gimp-image-get-layers img)))
          (currentframe 0)
          (i 0)
          (layername "")
          (frcheck ""))
 
-    (set! i(- numoflayers 1))
-
+    (set! i (- numoflayers 1))
     (while (>= i 0)
+      (set! currentframe (aref framelist i))
+      (set! layername (car (gimp-drawable-get-name currentframe)))
+      (set! frcheck (string-ref layername 0))
+      (set! frcheck (string frcheck))
 
-      (set! currentframe(aref framelist i))
+      (if (string=? frcheck "F") (gimp-layer-set-opacity currentframe opacity))
 
-      (set! layername(car(gimp-drawable-get-name currentframe)))
-      (set! frcheck(string-ref layername 0))
-      (set! frcheck(string frcheck))
-
-      (if (string=? frcheck "F")(gimp-layer-set-opacity currentframe opacity))
-
-      (set! i (- i 1)))
-
-    )
+      (set! i (- i 1))))
 
   (gimp-image-undo-group-end img)
   (gimp-displays-flush))
@@ -1352,7 +1232,7 @@
 
 ;;; Anim-rename.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -1371,29 +1251,28 @@
 ;; Returns    : New Layer Name
 
 (define (rename-layer img layerid layername input)
-
-  (let* ((layerprefix(substring layername 0 6))
-         (layersuffix(substring layername 9))
+  (let* ((layerprefix (substring layername 0 6))
+         (layersuffix (substring layername 9))
 
          (newlayername "")
-         (input(number->string input))
+         (input (number->string input))
          (output "")
          (numbera "")
          (numberb "")
-         (input(string-append "000" input))
-         (numbera(string-length input))
+         (input (string-append "000" input))
+         (numbera (string-length input))
          (checklength "")
          (check ""))
     (set! numberb (- numbera 3))
-    (set! output(substring input numberb))
+    (set! output (substring input numberb))
     (set! newlayername (string-append layerprefix output layersuffix))
 
-    (set! checklength(string-length newlayername))
-    (set! checklength(- checklength 1))
-    (set! check(string-ref newlayername checklength))
+    (set! checklength (string-length newlayername))
+    (set! checklength (- checklength 1))
+    (set! check (string-ref newlayername checklength))
     (set! check (string check))
 
-    (if(not(string=? check ")"))
+    (if (not (string=? check ")"))
        (set! newlayername (substring newlayername 0 (- checklength 1))))
 
     (gimp-drawable-set-name layerid newlayername)
@@ -1405,7 +1284,6 @@
 ;; Returns    : Frames Held for (25fps)
 
 (define (frame-hold checktiming)
-
   (let* ((timelength 0)
          (framehold 0)
          (i 0)
@@ -1414,40 +1292,28 @@
          (check ""))
 
     ;;"frame-000-(40ms)"
-
-    (set! checklength(string-length checktiming))
-    (set! checklength(- checklength 1))
-    (set! check(string-ref checktiming checklength))
+    (set! checklength (string-length checktiming))
+    (set! checklength (- checklength 1))
+    (set! check (string-ref checktiming checklength))
     (set! check (string check))
 
-    (if(not(string=? check ")"))
+    (if (not (string=? check ")"))
        (while (= i 0)
-
-         (set! check(string-ref checktiming checklength))
+         (set! check (string-ref checktiming checklength))
          (set! check (string check))
-         (if(not(string=? check ")"))(set! remove(+ remove 1)))
-         (set! checklength(- checklength 1))
-         (if (string=? check ")")(set! i(+ i 1)))))
+         (if (not (string=? check ")")) (set! remove (+ remove 1)))
+         (set! checklength (- checklength 1))
+         (if (string=? check ")") (set! i (+ i 1)))))
 
-    (set! checktiming(substring checktiming 10))
+    (set! checktiming (substring checktiming 10)) ;"40ms)"
 
-    ;;"40ms)"
+    (set! timelength (string-length checktiming))
+    (set! timelength (- timelength 3))
+    (set! timelength (- timelength remove))
 
-    (set! timelength(string-length checktiming))
-    (set! timelength(- timelength 3))
-    (set! timelength(- timelength remove))
-
-    (set! checktiming(substring checktiming 0 timelength))
-
-    ;;"40"
-
-    (set! framehold(string->number checktiming))
-
-    ;;40
-
-    (set! framehold(/ framehold 40))
-
-    ;;1
+    (set! checktiming (substring checktiming 0 timelength)) ;"40"
+    (set! framehold (string->number checktiming)) ; 40
+    (set! framehold (/ framehold 40)) ; 1
 
     ;; return framehold
     framehold))
@@ -1455,9 +1321,7 @@
 ;; RENAME FRAMES (Based on their timing)
 
 (define (lbox-rename-frames-timing img)
-
   (gimp-image-undo-group-start img)
-
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
          (i 0)
@@ -1473,17 +1337,14 @@
          (frame 0))
 
     (while (< x 2)
-
       (set! i (- num-layers 1))
 
       (while (>= i 0)
-
         (set! layerid (aref layer-array i))
 
         ;; check if a Frame
-
-        (set! layername(car(gimp-drawable-get-name layerid)))
-        (set! frcheck(substring layername 0 6))
+        (set! layername (car (gimp-drawable-get-name layerid)))
+        (set! frcheck (substring layername 0 6))
 
         (if (string=? frcheck "Colour")
             (if (= frame 1)
@@ -1500,12 +1361,11 @@
         (set! clayername (substring layername 5 9))
         (set! clayername (string-append "Colour" clayername))
 
-        (if(string=? frcheck "Frame-")
-           (
-            begin
-             (set! frcount(+ frcount hold))
+        (if (string=? frcheck "Frame-")
+           (begin
+             (set! frcount (+ frcount hold))
              (set! colourrename (rename-layer img layerid layername frcount))
-             (set! hold(frame-hold layername))
+             (set! hold (frame-hold layername))
              (set! frame 1)))
         (set! oldlayername clayername)
         (set! i (- i 1)))
@@ -1535,17 +1395,14 @@
          (frame 0))
 
     (while (< x 2)
-
       (set! i (- num-layers 1))
 
       (while (>= i 0)
-
         (set! layerid (aref layer-array i))
 
         ;; check if a Frame
-
-        (set! layername(car(gimp-drawable-get-name layerid)))
-        (set! frcheck(substring layername 0 6))
+        (set! layername (car (gimp-drawable-get-name layerid)))
+        (set! frcheck (substring layername 0 6))
 
         (if (string=? frcheck "Colour")
             (if (= frame 1)
@@ -1562,9 +1419,9 @@
         (set! clayername (substring layername 5 9))
         (set! clayername (string-append "Colour" clayername))
 
-        (if(string=? frcheck "Frame-")
+        (if (string=? frcheck "Frame-")
            (begin
-             (set! frcount(+ frcount 1))
+             (set! frcount (+ frcount 1))
              (set! colourrename (rename-layer img layerid layername frcount))
              (set! frame 1)))
 
@@ -1605,7 +1462,7 @@
 
 ;;; Anim-timing.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -1620,11 +1477,9 @@
 ;;             Frame Hold
 
 (define (lbox-retime-exposure img layer hold)
-
   (gimp-image-undo-group-start img)
-
-  (let* ((layername(car(gimp-drawable-get-name layer)))
-         (without-timing(substring layername 0 9))
+  (let* ((layername (car (gimp-drawable-get-name layer)))
+         (without-timing (substring layername 0 9))
          (new-timing hold)
          (newlayername "")
          (confirm-frame ""))
@@ -1634,8 +1489,8 @@
     (set! new-timing (string-append "(" new-timing "ms)"))
 
     (set! newlayername (string-append without-timing new-timing))
-    (set! confirm-frame(string-ref layername 0))
-    (set! confirm-frame(string confirm-frame))
+    (set! confirm-frame (string-ref layername 0))
+    (set! confirm-frame (string confirm-frame))
 
     (if (string=? confirm-frame "F")
 
@@ -1647,12 +1502,12 @@
 ;; RETIME SINGLE EXPOSURE
 
 (define (lbox-retime-single-exposure img layer)
-  (let* ((hold 1))(lbox-retime-exposure img layer hold)))
+  (let* ((hold 1)) (lbox-retime-exposure img layer hold)))
 
 ;; RETIME DOUBLE EXPOSURE
 
 (define (lbox-retime-double-exposure img layer)
-  (let* ((hold 2))(lbox-retime-exposure img layer hold)))
+  (let* ((hold 2)) (lbox-retime-exposure img layer hold)))
 
 ;; Register scripts
 
@@ -1702,7 +1557,7 @@
 
 ;;; Anim-playback.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -1712,7 +1567,6 @@
 ;; COMPOSITE
 
 (define (bg-comp img newImg complayer inColour)
-
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
 
@@ -1726,37 +1580,31 @@
          (newBGid 0)
          (num-BG 0)
 
-         (complayer-name (car(gimp-drawable-get-name complayer)))
+         (complayer-name (car (gimp-drawable-get-name complayer)))
          (new-complayer complayer))
 
     (while (>= i 0)
-
       (set! layerid (aref layer-array i))
-      (set! layername(car(gimp-drawable-get-name layerid)))
-      (set! frcheck(string-ref layername 0))
-      (set! frcheck(string frcheck))
+      (set! layername (car (gimp-drawable-get-name layerid)))
+      (set! frcheck (string-ref layername 0))
+      (set! frcheck (string frcheck))
 
       (if (string=? frcheck "B")
-
-          (
-           begin
-            (set! vischeck (car(gimp-drawable-get-visible layerid)))
+          (begin
+            (set! vischeck (car (gimp-drawable-get-visible layerid)))
             (if (= vischeck 1)
-                (
-                 begin
-                  (set! newBGid (car(gimp-layer-new-from-drawable layerid newImg)))
+                (begin
+                  (set! newBGid
+                        (car (gimp-layer-new-from-drawable layerid newImg)))
 
                   (gimp-image-add-layer newImg newBGid 0)
-
                   (set! num-BG (+ num-BG 1))))))
 
       (set! i (- i 1)))
 
     (if (>= num-BG 1)
         (begin
-
           ;;(set! num-BG (- num-BG 1))
-
           (if (= inColour FALSE)
               (begin
                 (gimp-image-add-layer newImg complayer 0)
@@ -1767,16 +1615,15 @@
               (gimp-image-raise-layer-to-top newImg complayer))
 
           ;; merge layer with BG
-
           (while (>= num-BG 1)
-
             (gimp-layer-set-mode new-complayer 0)
-            (set! new-complayer (car(gimp-image-merge-down newImg new-complayer 0)))
+            (set! new-complayer
+                  (car (gimp-image-merge-down newImg new-complayer 0)))
             (set! num-BG (- num-BG 1)))
 
           (gimp-drawable-set-name new-complayer complayer-name))
 
-        (if (= inColour FALSE)(gimp-image-add-layer newImg complayer 0)))
+        (if (= inColour FALSE) (gimp-image-add-layer newImg complayer 0)))
 
     new-complayer))
 
@@ -1785,7 +1632,7 @@
 (define (merge-with-colour img layerid newImg complayerid inLine inBG inAlpha)
   (let* ((layer-array (cadr (gimp-image-get-layers img)))
 
-         (layer-pos (car(gimp-image-get-layer-position img layerid)))
+         (layer-pos (car (gimp-image-get-layer-position img layerid)))
          (colour-pos (- layer-pos 1))
          (colourid 0)
          (colourname 0)
@@ -1795,8 +1642,8 @@
 
          (rename "")
 
-         (imgHeight (car(gimp-image-height img)))
-         (imgWidth  (car(gimp-image-width img)))
+         (imgHeight (car (gimp-image-height img)))
+         (imgWidth  (car (gimp-image-width img)))
          (removealpha 0))
 
     (if (= inLine 1)
@@ -1806,19 +1653,19 @@
           (gimp-drawable-set-visible complayerid TRUE)
           (set! output complayerid)))
 
-    (set! rename(car(gimp-drawable-get-name layerid)))
+    (set! rename (car (gimp-drawable-get-name layerid)))
 
     (if (>= colour-pos 0)
-
         (begin
           (set! colourid (aref layer-array colour-pos))
-          (set! colourname(car(gimp-drawable-get-name colourid)))
-          (set! Ccheck(substring colourname 0 6))
+          (set! colourname (car (gimp-drawable-get-name colourid)))
+          (set! Ccheck (substring colourname 0 6))
 
           (if (string=? Ccheck "Colour")
               (begin
-                (set! colourid (car(gimp-layer-new-from-drawable colourid newImg)))
-                (if (and (= inBG TRUE)(= inLine 1))
+                (set! colourid
+                      (car (gimp-layer-new-from-drawable colourid newImg)))
+                (if (and (= inBG TRUE) (= inLine 1))
                     (plug-in-colortoalpha 1 newImg complayerid '(255 255 255)))
                 (gimp-image-add-layer newImg colourid 0)
                 (set! output colourid)
@@ -1831,28 +1678,35 @@
                           (begin
                             (gimp-layer-set-mode colourid 0)
                             (gimp-image-raise-layer-to-top newImg complayerid)
-                            (set! output (car(gimp-image-merge-down newImg complayerid 0)))
+                            (set! output
+                                  (car (gimp-image-merge-down newImg
+                                                              complayerid 0)))
                             (gimp-drawable-set-name output rename)
                             (gimp-layer-set-mode output 0))
-                          (set! output (car(gimp-image-merge-down newImg colourid 0))))))
+                          (set! output
+                                (car (gimp-image-merge-down
+                                      newImg colourid 0))))))
 
-                (if (and(= inBG FALSE)(= inAlpha 0))
+                (if (and (= inBG FALSE) (= inAlpha 0))
                     (begin
-                      (set! removealpha (car(gimp-layer-new newImg imgWidth imgHeight 1 "White" 100 0)))
+                      (set! removealpha
+                            (car (gimp-layer-new newImg imgWidth imgHeight
+                                                 1 "White" 100 0)))
                       (gimp-drawable-fill removealpha WHITE-FILL)
                       (gimp-image-add-layer newImg removealpha 1)
-                      (set! output (car(gimp-image-merge-down newImg colourid 0)))))))
+                      (set! output
+                            (car (gimp-image-merge-down newImg colourid 0)))))))
+
           (gimp-drawable-set-name output rename)))
 
     output))
 
 (define (comp-animation-layers img inLine inColour inBG inAlpha)
-
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
 
-         (imgHeight (car(gimp-image-height img)))
-         (imgWidth (car(gimp-image-width img)))
+         (imgHeight (car (gimp-image-height img)))
+         (imgWidth (car (gimp-image-width img)))
 
          (newImg 0)
 
@@ -1867,40 +1721,38 @@
     (gimp-image-undo-disable img)
 
     ;; create new image
-
-    (set! newImg (car(gimp-image-new imgWidth imgHeight 0)))
+    (set! newImg (car (gimp-image-new imgWidth imgHeight 0)))
 
     ;; get layer marked F
     ;;
     ;; bottom layer working up, add at position 0 of new image.
 
     ;; check layer name
-
     (while (>= i 0)
-
       (set! layerid (aref layer-array i))
-      (set! layername(car(gimp-drawable-get-name layerid)))
-      (set! frcheck(string-ref layername 0))
-      (set! frcheck(string frcheck))
+      (set! layername (car (gimp-drawable-get-name layerid)))
+      (set! frcheck (string-ref layername 0))
+      (set! frcheck (string frcheck))
 
       ;; if "F" add to new image
-
-      (if(string=? frcheck "F")
-
+      (if (string=? frcheck "F")
          (begin
-           (if (= inLine 1)(set! newlayerid (car(gimp-layer-new-from-drawable layerid newImg))))
+           (if (= inLine 1)
+               (set! newlayerid
+                     (car (gimp-layer-new-from-drawable layerid newImg))))
            ;; alt
            ;;
            (if (= inColour TRUE)
                (begin
-
-                 (set! newlayerid (merge-with-colour img layerid newImg newlayerid inLine inBG inAlpha))))
+                 (set! newlayerid (merge-with-colour
+                                   img layerid newImg newlayerid inLine
+                                   inBG inAlpha))))
 
            (if (= inBG TRUE)
-
                (set! newlayerid (bg-comp img newImg newlayerid inColour)))
 
-           (if (and (= inBG FALSE)(= inColour FALSE))(gimp-image-add-layer newImg newlayerid 0))))
+           (if (and (= inBG FALSE) (= inColour FALSE))
+               (gimp-image-add-layer newImg newlayerid 0))))
 
       (set! i (- i 1)))
 
@@ -1916,13 +1768,12 @@
          (inLine 1)
          (inAlpha 0))
 
-    (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
+    (set! newImg (comp-animation-layers img inLine inColour inBG inAlpha))
     (set! layer-array (cadr (gimp-image-get-layers newImg)))
     (set! newlayerid (aref layer-array 0))
     (plug-in-animationplay 1 newImg newlayerid)
     (gimp-image-delete newImg)
     ;;(gimp-display-new newImg)
-
     ))
 
 (define (lbox-comp-img img inColour inBG)
@@ -1930,7 +1781,7 @@
          (inLine 1)
          (inAlpha 0))
 
-    (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
+    (set! newImg (comp-animation-layers img inLine inColour inBG inAlpha))
     ;;(gimp-image-delete newImg)
     (gimp-display-new newImg)))
 
@@ -1968,7 +1819,7 @@
 
 ;;; Anim-export.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;23.05.11
+;;; 23.05.11
 ;;; Version 1.0
 
 ;; INFO
@@ -1981,35 +1832,24 @@
 ;; framename = "framename" framenum = 1
 
 (define (filename-timing framename framenum extention)
-
   (let* ((Savefr-num-string "0000")
          (newstring "")
          (istring "")
          (checklength 0)
          (filename ""))
 
-    (set! istring (number->string framenum))
+    (set! istring (number->string framenum)) ; 1
+    (set! newstring (string-append Savefr-num-string istring)) ; 00001
 
-    ;;1
-    (set! newstring (string-append Savefr-num-string istring))
+    (set! checklength (string-length newstring)) ; 5
+    (set! checklength (- checklength 3)) ; 3 = length of string. can
+                                         ; include variable. Returns 2
 
-    ;;00001
-
-    (set! checklength (string-length newstring))
-    ;;5
-    (set! checklength (- checklength 3))
-    ;;3 = length of string. can include variable
-    ;; returns 2
-
-    (set! newstring (substring newstring checklength))
-
-    ;;001
-
+    (set! newstring (substring newstring checklength)) ; 001
     (set! filename (string-append framename "-" newstring extention))
-
     ;; framename-001.png
-    ;; return filename
 
+    ;; return filename
     filename))
 
 ;; SAVE LAYERS
@@ -2018,66 +1858,53 @@
   (let* ((num-layers (car (gimp-image-get-layers img)))
          (layer-array (cadr (gimp-image-get-layers img)))
          (i (- num-layers 1))
-
          (layerid 0)
-
          (layername "")
          (frcheck "")
-
          (frame-num 1)
          (hold 0)
-
          (save-name "")
-
          (ext ".png"))
 
     (gimp-image-undo-disable img)
 
     ;; get bottom frame id
-
     (while (>= i 0)
-
       (set! layerid (aref layer-array i))
 
       ;; check if a frame
-
-      (set! layername(car(gimp-drawable-get-name layerid)))
-      (set! frcheck(string-ref layername 0))
-      (set! frcheck(string frcheck))
+      (set! layername (car (gimp-drawable-get-name layerid)))
+      (set! frcheck (string-ref layername 0))
+      (set! frcheck (string frcheck))
 
       (if (string=? frcheck "F")
-          (
-           begin
-
-            (if (= timing 1)(set! hold (frame-hold layername))(set! hold 1))
+          (begin
+            (if (= timing 1) (set! hold (frame-hold layername)) (set! hold 1))
 
             (while (> hold 0)
-
               (set! save-name (filename-timing framename frame-num ext))
               (set! save-name (string-append dir DIR-SEPARATOR save-name))
               (file-png-save 1 img layerid save-name save-name 0 9 1 1 1 1 1)
               (set! frame-num (+ frame-num 1))
               (set! hold (- hold 1)))))
 
-      ;; end if
-
       (set! i (- i 1)))
-
-    ;; end while
 
     (gimp-image-undo-enable img)))
 
 (define (lbox-imgseq-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 1))
-    (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
+
+    (set! newImg (comp-animation-layers img inLine inColour inBG inAlpha))
     (save-frames-as-png newImg framename option dir timing)
     (gimp-image-delete newImg)))
 
 (define (lbox-layercomp-export img framename option dir inLine inColour inBG inAlpha)
   (let* ((newImg 0)
          (timing 0))
-    (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
+
+    (set! newImg (comp-animation-layers img inLine inColour inBG inAlpha))
     (save-frames-as-png newImg framename option dir timing)
     (gimp-image-delete newImg)))
 
@@ -2092,33 +1919,34 @@
          (layername "")
          (frhold 1)
          (newlayer 0)
-         (imgWidth (car(gimp-image-width img)))
-         (imgHeight (car(gimp-image-height img)))
+         (imgWidth (car (gimp-image-width img)))
+         (imgHeight (car (gimp-image-height img)))
          (inAlpha FALSE)
          (inLine TRUE))
 
-    (set! newImg(comp-animation-layers img inLine inColour inBG inAlpha))
+    (set! newImg (comp-animation-layers img inLine inColour inBG inAlpha))
     (set! layer-array (cadr (gimp-image-get-layers newImg)))
     (set! num-layers (car (gimp-image-get-layers newImg)))
     (set! i (- num-layers 1))
 
     (while (>= i 0)
       (set! layerid (aref layer-array i))
-      (set! layername (car(gimp-drawable-get-name layerid)))
+      (set! layername (car (gimp-drawable-get-name layerid)))
       (if (= frhold 1)
           (set! frhold (frame-hold layername)))
 
       (if (> frhold 1)
           (begin
-            (set! newlayer (car(gimp-layer-copy layerid FALSE)))
+            (set! newlayer (car (gimp-layer-copy layerid FALSE)))
             (gimp-image-add-layer newImg newlayer i)
             (set! frhold (- frhold 1))))
 
-      (if (= frhold 1)(set! i (- i 1))))
+      (if (= frhold 1) (set! i (- i 1))))
 
     (set! num-layers (car (gimp-image-get-layers newImg)))
-
-    (plug-in-gap-vid-encode-master 0 newImg 0 "Animation" 0 num-layers imgWidth imgHeight 1 25 48 "" "plug_in_gap_enc_ffmpeg" "" "" 1)
+    (plug-in-gap-vid-encode-master 0 newImg 0 "Animation" 0 num-layers
+                                   imgWidth imgHeight 1 25 48
+                                   "" "plug_in_gap_enc_ffmpeg" "" "" 1)
 
     (gimp-image-delete newImg)
     ;;(gimp-display-new newImg)
@@ -2176,7 +2004,7 @@
 ;;       SF-DIRNAME      "Image Directory" "/home"
 ;;       SF-TOGGLE "Line" TRUE
 ;;       SF-TOGGLE "Colour" FALSE
-;;      SF-TOGGLE "Background" FALSE
+;;       SF-TOGGLE "Background" FALSE
 ;;       SF-TOGGLE "Include Alpha" FALSE
 ;;)
 ;;
@@ -2185,17 +2013,18 @@
 
 ;;; Anim-ForceRename.scm -*-scheme*-*-
 ;;; Author: Benjamin Donoghue
-;;;25.08.11
+;;; 25.08.11
 ;;; Version 1.1
 
 ;; INFO
 ;;
-;; Forces renames all layers to 'Frame-' Layers. Useful when importing multiple layers into GIMP for ; animating
+;; Forces renames all layers to 'Frame-' Layers. Useful when importing
+;; multiple layers into GIMP for animating
 
 (define (lbox-batch-rename img  timing)
   (gimp-image-undo-group-start img)
-  (let* ((numoflayers(car(gimp-image-get-layers img)))
-         (layer-array(cadr(gimp-image-get-layers img)))
+  (let* ((numoflayers (car (gimp-image-get-layers img)))
+         (layer-array (cadr (gimp-image-get-layers img)))
          (newlayerid 0)
          (x (- numoflayers 1))
          (newnum 1)
