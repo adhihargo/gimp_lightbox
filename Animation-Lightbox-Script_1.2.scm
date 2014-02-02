@@ -53,7 +53,7 @@
 (define (lbox-hdlarge-new-image)
   (let* ((image (car (gimp-image-new 1920 1080 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1920 1080 RGBA-IMAGE
+         (bglayer (car (gimp-layer-new image 1920 1080 RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
@@ -70,7 +70,7 @@
 (define (lbox-hdsmall-new-image)
   (let* ((image (car (gimp-image-new 1280 720 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1280 720 RGBA-IMAGE
+         (bglayer (car (gimp-layer-new image 1280 720 RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
@@ -87,7 +87,7 @@
 (define (lbox-sd-new-image)
   (let* ((image (car (gimp-image-new 720 576 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 720 576 RGBA-IMAGE
+         (bglayer (car (gimp-layer-new image 720 576 RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
@@ -220,7 +220,7 @@
 
          ;; create frame
          (animframe (car (gimp-layer-new img canvasWidth canvasHeight
-                                         RGBA-IMAGE filename 100 NORMAL-MODE))))
+                                         RGB-IMAGE filename 100 NORMAL-MODE))))
 
     (gimp-drawable-fill animframe WHITE-FILL)
     (gimp-image-add-layer img animframe 0)
