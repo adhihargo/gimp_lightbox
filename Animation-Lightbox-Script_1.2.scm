@@ -48,6 +48,18 @@
 ;; Creates a new canvas for animating with a background layer. All based on 16:9 widescreen
 ;; at 25 frames a second.
 
+(define (is-frame-name? layername)
+  (and (> (string-length layername) 5)
+       (string=? (substring layername 0 5) "Frame")))
+
+(define (is-colour-name? layername)
+  (and (> (string-length layername) 6)
+       (string=? (substring layername 0 6) "Colour")))
+
+(define (is-background-name? layername)
+  (and (> (string-length layername) 10)
+       (string=? (substring layername 0 10) "Background")))
+
 ;; CREATE 1080P CANVAS
 
 (define (lbox-hdlarge-new-image)
@@ -170,16 +182,13 @@
          (frameno 0)
          (currentframe 0)
          (framename "")
-         (check "")
          (Framecount 1))
 
     (while (> numoflayers 0)
       (set! currentframe (aref framelist frameno))
       (set! framename (car (gimp-drawable-get-name currentframe)))
 
-      (set! check (string-ref framename 0))
-      (set! check (string check))
-      (if (string=? check "B")
+      (if (is-background-name? framename)
          (set! Framecount (+ Framecount 1)))
       (set! numoflayers (- numoflayers 1))
       (set! frameno (+ frameno 1)))
@@ -252,16 +261,13 @@
          (frameno 0)
          (currentframe 0)
          (framename "")
-         (check "")
          (Framecount 1))
 
     (while (> numoflayers 0)
       (set! currentframe (aref framelist frameno))
       (set! framename (car (gimp-drawable-get-name currentframe)))
 
-      (set! check (string-ref framename 0))
-      (set! check (string check))
-      (if (string=? check "F")
+      (if (is-frame-name? framename)
          (set! Framecount (+ Framecount 1)))
       (set! numoflayers (- numoflayers 1))
       (set! frameno (+ frameno 1)))
@@ -421,7 +427,6 @@
          (i 0)
          (layerid 0)
          (layername "")
-         (frcheck "")
          (lname-length 0)
          (canvasWidth (car (gimp-image-width img)))
          (canvasHeight (car (gimp-image-height img)))
@@ -434,10 +439,7 @@
     (while (< i num-layers)
       (set! layerid (aref layer-array i))
       (set! layername (car (gimp-drawable-get-name layerid)))
-      (set! frcheck (string-ref layername 0))
-      (set! frcheck (string frcheck))
-
-      (if (string=? frcheck "F")
+      (if (is-frame-name? layername)
           (begin
             (set! layername (substring layername 5 9))
             (set! layername (string-append "Colour" layername))
@@ -445,9 +447,8 @@
             ;; check layer above see if match
             (set! clayerid (aref layer-array ci))
             (set! clayername (car (gimp-drawable-get-name clayerid)))
-            (set! clayername (substring clayername 0 6))
 
-            (if (not (string=? clayername "Colour"))
+            (if (not (is-colour-name? clayername))
                 (begin
                   (set! colourlayer
                         (car (gimp-layer-new img canvasWidth canvasHeight
@@ -503,8 +504,7 @@
 (define (visibility-off img num-layers layer-array )
   (let* ((turn-off-layer 0)
          (i 0)
-         (layername "")
-         (BGcheck ""))
+         (layername ""))
 
     ;; set all layers to invisible
     (while (equal?(>= i 0) (< i num-layers))
@@ -512,10 +512,8 @@
 
       ;; check if a background
       (set! layername (car (gimp-drawable-get-name turn-off-layer)))
-      (set! BGcheck (string-ref layername 0))
-      (set! BGcheck (string BGcheck))
 
-      (if (not (string=? BGcheck "B"))
+      (if (not (is-background-name? layername))
           (gimp-drawable-set-visible turn-off-layer 0))
 
       (set! i (+ i 1)))))
@@ -530,32 +528,29 @@
 
     (set! currentid (aref layer-array ltlayer-pos))
     (set! currentname (car (gimp-drawable-get-name currentid)))
-    (set! currentname (substring currentname 0 6))
 
-    (if (string=? currentname "Frame-")
+    (if (is-frame-name? currentname)
         (begin
           (set! layertag 0)
           (if (= ltlayer-pos 0) (set! ltlayer-pos 1))
           (set! currentid (aref layer-array (- ltlayer-pos 1)))
           (set! currentname (car (gimp-drawable-get-name currentid)))
-          (set! currentname (substring currentname 0 6))
 
-          (if (string=? currentname "Colour")
+          (if (is-colour-name? currentname)
               (begin
                 (set! vischeck (car (gimp-drawable-get-visible currentid)))
                 (if (= vischeck 1) (set! layertag 1))
                 (set! currentname "null")))))
 
-    (if (string=? currentname "Colour")
+    (if (is-colour-name? currentname)
         (begin
           (set! layertag 3)
           (if (= ltlayer-pos (- num-layers 1))
               (set! ltlayer-pos (- ltlayer-pos 1)))
           (set! currentid (aref layer-array (+ ltlayer-pos 1)))
           (set! currentname (car (gimp-drawable-get-name currentid)))
-          (set! currentname (substring currentname 0 6))
 
-          (if (string=? currentname "Frame-")
+          (if (is-frame-name? currentname)
               (begin
                 (set! vischeck (car (gimp-drawable-get-visible currentid)))
                 (if (= vischeck 1) (set! layertag 2))
@@ -708,8 +703,7 @@
          (layer-array (cadr (gimp-image-get-layers img)))
          (turn-off-layer 0)
          (i 0)
-         (layername "")
-         (BGcheck ""))
+         (layername ""))
 
     ;; set all layers to invisible
     (while (equal?(>= i 0) (< i num-layers))
@@ -717,10 +711,7 @@
 
       ;; check if a background
       (set! layername (car (gimp-drawable-get-name turn-off-layer)))
-      (set! BGcheck (string-ref layername 0))
-      (set! BGcheck (string BGcheck))
-
-      (if (not (string=? BGcheck "B"))
+      (if (not (is-background-name? layername))
           (gimp-drawable-set-visible turn-off-layer 0))
 
       (set! i (+ i 1)))))
@@ -735,7 +726,6 @@
          (checkvis)
 
          (layername "")
-         (FCheck "")
          (i 0))
 
     (set! i (- numlayers 1))
@@ -747,10 +737,8 @@
 
       ;; check if frame
       (set! layername (car (gimp-drawable-get-name checklayer)))
-      (set! FCheck (string-ref layername 0))
-      (set! FCheck (string FCheck))
 
-      (if (string=? FCheck "F")
+      (if (is-frame-name? layername)
           (if (= checkvis 1)
               (set! FRAMEcount (+ FRAMEcount 1))))
 
@@ -760,7 +748,6 @@
 
 (define (next-frame-down img layerpos)
   (let* ((layername "")
-         (check "")
          (layer-array (cadr (gimp-image-get-layers img)))
          (numlayers (car (gimp-image-get-layers img)))
          (newlayerid)
@@ -771,15 +758,13 @@
     (while (= break 0)
       (set! newlayerid (aref layer-array newlayerpos))
       (set! layername (car (gimp-drawable-get-name newlayerid)))
-      (set! check (string-ref layername 0))
-      (set! check (string check))
 
-      (if (string=? check "F") (set! break 1))
+      (if (is-frame-name? layername) (set! break 1))
 
       (set! newlayerpos (+ newlayerpos 1))
       (if (> newlayerpos (- numlayers 1)) (set! break 1)))
 
-    (if (not (string=? check "F"))
+    (if (not (is-frame-name? layername))
         (set! newlayerid
               (aref layer-array layerpos)))
 
@@ -787,7 +772,6 @@
 
 (define (next-frame-up img currentlayer)
   (let* ((layername "")
-         (check "")
          (layer-array (cadr (gimp-image-get-layers img)))
          (numlayers (car (gimp-image-get-layers img)))
          (newlayerid)
@@ -798,18 +782,14 @@
 
     (while (= break 0)
       (set! newlayerid (aref layer-array newlayerpos))
-
       (set! layername (car (gimp-drawable-get-name newlayerid)))
-      (set! check (string-ref layername 0))
-      (set! check (string check))
 
-      (if (string=? check "F") (set! break 1))
+      (if (is-frame-name? layername) (set! break 1))
 
       (set! newlayerpos (- newlayerpos 1))
       (if (< newlayerpos 0) (set! break 1)))
 
-    (if (not (string=? check "F"))
-
+    (if (not (is-frame-name? layername))
         (set! newlayerid
               (aref layer-array currentlayer)))
 
@@ -1180,22 +1160,19 @@
 
 (define (opacity-update-frames img opacity)
   (gimp-image-undo-group-start img)
-
   (let* ((numoflayers (car (gimp-image-get-layers img)))
          (framelist (cadr (gimp-image-get-layers img)))
          (currentframe 0)
          (i 0)
-         (layername "")
-         (frcheck ""))
+         (layername ""))
 
     (set! i (- numoflayers 1))
     (while (>= i 0)
       (set! currentframe (aref framelist i))
       (set! layername (car (gimp-drawable-get-name currentframe)))
-      (set! frcheck (string-ref layername 0))
-      (set! frcheck (string frcheck))
 
-      (if (string=? frcheck "F") (gimp-layer-set-opacity currentframe opacity))
+      (if (is-frame-name? layername)
+          (gimp-layer-set-opacity currentframe opacity))
 
       (set! i (- i 1))))
 
@@ -1326,7 +1303,6 @@
          (layer-array (cadr (gimp-image-get-layers img)))
          (i 0)
          (layername "")
-         (frcheck "")
          (layerid 0)
          (frcount 0)
          (x 0)
@@ -1340,13 +1316,10 @@
       (set! i (- num-layers 1))
 
       (while (>= i 0)
-        (set! layerid (aref layer-array i))
-
         ;; check if a Frame
+        (set! layerid (aref layer-array i))
         (set! layername (car (gimp-drawable-get-name layerid)))
-        (set! frcheck (substring layername 0 6))
-
-        (if (string=? frcheck "Colour")
+        (if (is-colour-name? layername)
             (if (= frame 1)
                 (begin
                   (set! layername (substring colourrename 5 9))
@@ -1361,7 +1334,7 @@
         (set! clayername (substring layername 5 9))
         (set! clayername (string-append "Colour" clayername))
 
-        (if (string=? frcheck "Frame-")
+        (if (is-frame-name? layername)
            (begin
              (set! frcount (+ frcount hold))
              (set! colourrename (rename-layer img layerid layername frcount))
@@ -1386,7 +1359,6 @@
          (i 0)
          (layername "")
          (oldlayername "")
-         (frcheck "")
          (layerid 0)
          (frcount 0)
          (x 0)
@@ -1398,13 +1370,10 @@
       (set! i (- num-layers 1))
 
       (while (>= i 0)
-        (set! layerid (aref layer-array i))
-
         ;; check if a Frame
+        (set! layerid (aref layer-array i))
         (set! layername (car (gimp-drawable-get-name layerid)))
-        (set! frcheck (substring layername 0 6))
-
-        (if (string=? frcheck "Colour")
+        (if (is-colour-name? layername)
             (if (= frame 1)
                 (begin
                   (set! layername (substring colourrename 5 9))
@@ -1419,7 +1388,7 @@
         (set! clayername (substring layername 5 9))
         (set! clayername (string-append "Colour" clayername))
 
-        (if (string=? frcheck "Frame-")
+        (if (is-frame-name? layername)
            (begin
              (set! frcount (+ frcount 1))
              (set! colourrename (rename-layer img layerid layername frcount))
@@ -1572,7 +1541,6 @@
 
          (layerid 0)
          (layername "")
-         (frcheck "")
 
          (i (- num-layers 1))
          (vischeck 0)
@@ -1586,10 +1554,7 @@
     (while (>= i 0)
       (set! layerid (aref layer-array i))
       (set! layername (car (gimp-drawable-get-name layerid)))
-      (set! frcheck (string-ref layername 0))
-      (set! frcheck (string frcheck))
-
-      (if (string=? frcheck "B")
+      (if (is-background-name? layername)
           (begin
             (set! vischeck (car (gimp-drawable-get-visible layerid)))
             (if (= vischeck 1)
@@ -1636,7 +1601,6 @@
          (colour-pos (- layer-pos 1))
          (colourid 0)
          (colourname 0)
-         (Ccheck 0)
          (i 1)
          (output 0)
 
@@ -1659,9 +1623,8 @@
         (begin
           (set! colourid (aref layer-array colour-pos))
           (set! colourname (car (gimp-drawable-get-name colourid)))
-          (set! Ccheck (substring colourname 0 6))
 
-          (if (string=? Ccheck "Colour")
+          (if (is-colour-name? colourname)
               (begin
                 (set! colourid
                       (car (gimp-layer-new-from-drawable colourid newImg)))
@@ -1714,7 +1677,6 @@
 
          (layerid 0)
          (layername "")
-         (frcheck "")
 
          (newlayerid 0))
 
@@ -1731,11 +1693,9 @@
     (while (>= i 0)
       (set! layerid (aref layer-array i))
       (set! layername (car (gimp-drawable-get-name layerid)))
-      (set! frcheck (string-ref layername 0))
-      (set! frcheck (string frcheck))
 
       ;; if "F" add to new image
-      (if (string=? frcheck "F")
+      (if (is-frame-name? layername)
          (begin
            (if (= inLine 1)
                (set! newlayerid
@@ -1860,7 +1820,6 @@
          (i (- num-layers 1))
          (layerid 0)
          (layername "")
-         (frcheck "")
          (frame-num 1)
          (hold 0)
          (save-name "")
@@ -1870,14 +1829,10 @@
 
     ;; get bottom frame id
     (while (>= i 0)
-      (set! layerid (aref layer-array i))
-
       ;; check if a frame
+      (set! layerid (aref layer-array i))
       (set! layername (car (gimp-drawable-get-name layerid)))
-      (set! frcheck (string-ref layername 0))
-      (set! frcheck (string frcheck))
-
-      (if (string=? frcheck "F")
+      (if (is-frame-name? layername)
           (begin
             (if (= timing 1) (set! hold (frame-hold layername)) (set! hold 1))
 
