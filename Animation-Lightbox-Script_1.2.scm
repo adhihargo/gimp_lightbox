@@ -63,10 +63,10 @@
 (define (canvas-new width height)
   (let* ((image (car (gimp-image-new width height RGB)))
          (gimp-image-undo-disable image)
-	 (bg-layer (car (gimp-layer-new image 1920 1080 RGB-IMAGE
+	 (bg-layer (car (gimp-layer-new image width height RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
-    (gimp-drawable-fill bglayer WHITE-FILL)
+    (gimp-drawable-fill bg-layer WHITE-FILL)
     (gimp-image-add-layer image bg-layer 0)
     (gimp-display-new image)
 
@@ -93,20 +93,7 @@
 ;; CREATE HALF 720P CANVAS
 
 (define (lbox-hdsmall-half-new-image)
-  (let* ((image (car (gimp-image-new 640 360 RGB)))
-         (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 640 360 RGB-IMAGE
-                                       "Background-01" 100 NORMAL-MODE))))
-
-    (gimp-drawable-fill bglayer WHITE-FILL)
-    (gimp-image-add-layer image bglayer 0)
-    (gimp-display-new image)
-    ;; (gimp-displays-flush)
-
-    (gimp-image-undo-enable image)
-    (gimp-image-clean-all image)
-
-    image))
+  (canvas-new 640 360))
 
 ;; Register scripts
 
