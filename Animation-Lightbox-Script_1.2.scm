@@ -60,54 +60,51 @@
   (and (> (string-length layername) 10)
        (string=? (substring layername 0 10) "Background")))
 
-;; CREATE 1080P CANVAS
-
-(define (lbox-hdlarge-new-image)
-  (let* ((image (car (gimp-image-new 1920 1080 RGB)))
+(define (canvas-new width height)
+  (let* ((image (car (gimp-image-new width height RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1920 1080 RGB-IMAGE
+	 (bg-layer (car (gimp-layer-new image 1920 1080 RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
-    (gimp-image-add-layer image bglayer 0)
+    (gimp-image-add-layer image bg-layer 0)
     (gimp-display-new image)
 
     (gimp-image-undo-enable image)
     (gimp-displays-flush)
 
     image))
+
+;; CREATE 1080P CANVAS
+
+(define (lbox-hdlarge-new-image)
+  (canvas-new 1920 1080))
 
 ;; CREATE 720P CANVAS
 
 (define (lbox-hdsmall-new-image)
-  (let* ((image (car (gimp-image-new 1280 720 RGB)))
-         (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 1280 720 RGB-IMAGE
-                                       "Background-01" 100 NORMAL-MODE))))
-
-    (gimp-drawable-fill bglayer WHITE-FILL)
-    (gimp-image-add-layer image bglayer 0)
-    (gimp-display-new image)
-
-    (gimp-image-undo-enable image)
-    (gimp-displays-flush)
-
-    image))
+  (canvas-new 1280 720))
 
 ;; CREATE PAL 16:9 CANVAS
 
 (define (lbox-sd-new-image)
-  (let* ((image (car (gimp-image-new 720 576 RGB)))
+  (canvas-new 720 576))
+
+;; CREATE HALF 720P CANVAS
+
+(define (lbox-hdsmall-half-new-image)
+  (let* ((image (car (gimp-image-new 640 360 RGB)))
          (gimp-image-undo-disable image)
-         (bglayer (car (gimp-layer-new image 720 576 RGB-IMAGE
+         (bglayer (car (gimp-layer-new image 640 360 RGB-IMAGE
                                        "Background-01" 100 NORMAL-MODE))))
 
     (gimp-drawable-fill bglayer WHITE-FILL)
     (gimp-image-add-layer image bglayer 0)
     (gimp-display-new image)
+    ;; (gimp-displays-flush)
 
     (gimp-image-undo-enable image)
-    (gimp-displays-flush)
+    (gimp-image-clean-all image)
 
     image))
 
@@ -140,6 +137,15 @@
  "Spring 2011"
  "")
 
+(script-fu-register
+ "lbox-hdsmall-half-new-image"
+ "Create _360p Canvas"
+ "Creates a new half-HD Canvas"
+ "Benjamin Donoghue"
+ "2011"
+ "Spring 2011"
+ "")
+
 (script-fu-menu-register "lbox-hdlarge-new-image"
                          "<Image>/_Animate/New _Canvas/")
 
@@ -147,6 +153,9 @@
                          "<Image>/_Animate/New _Canvas/")
 
 (script-fu-menu-register "lbox-sd-new-image"
+                         "<Image>/_Animate/New _Canvas/")
+
+(script-fu-menu-register "lbox-hdsmall-half-new-image"
                          "<Image>/_Animate/New _Canvas/")
 
 ;;; Anim-add-paper.scm -*-scheme*-*-
@@ -268,7 +277,7 @@
       (set! framename (car (gimp-drawable-get-name currentframe)))
 
       (if (is-frame-name? framename)
-         (set! Framecount (+ Framecount 1)))
+          (set! Framecount (+ Framecount 1)))
       (set! numoflayers (- numoflayers 1))
       (set! frameno (+ frameno 1)))
 
@@ -336,7 +345,7 @@
 
          ;; create frame
          (animframe (car (gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE
-                                       filename 50 NORMAL-MODE))))
+                                         filename 50 NORMAL-MODE))))
 
     (gimp-image-add-layer img animframe 0)
 
