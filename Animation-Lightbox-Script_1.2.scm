@@ -237,10 +237,11 @@
          (filename (string-append "Background-" framenoa))
 
          ;; create frame
-         (animframe (car (gimp-layer-new img canvasWidth canvasHeight
-                                         RGB-IMAGE filename 100 NORMAL-MODE))))
+         (animframe (car (gimp-layer-new img canvasWidth canvasHeight RGBA-IMAGE
+                                         filename 100 NORMAL-MODE))))
 
-    (gimp-drawable-fill animframe WHITE-FILL)
+    (if (equal? frameno 1)
+        (gimp-drawable-fill animframe WHITE-FILL))
     (gimp-image-add-layer img animframe 0)
 
     ;; move frame
